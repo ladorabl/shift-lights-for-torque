@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory>
+        android:title="Preferences"
+        <ListPreference android:title="@string/prefDialogTitle"
+            android:positiveButtonText="@string/buttonOK" 
+            android:negativeButtonText="@string/buttonCancel" 
+            android:entries="@array/prefsListArray" 
+            android:entryValues="@array/prefsListValues" 
+            android:key="@string/listPref" 
+            android:enabled="true" android:summary="@string/summaryDisplayOptions" android:selectable="true">
+        </ListPreference>
+        <CheckBoxPreference 
+            android:title="@string/showRPM" 
+            android:key="@string/showRPM" 
+            android:summary="@string/showRPM_summary" 
+            android:enabled="true" 
+            android:selectable="true" 
+            android:defaultValue="true">
+        </CheckBoxPreference>
+    </PreferenceCategory>
+    
+</PreferenceScreen>

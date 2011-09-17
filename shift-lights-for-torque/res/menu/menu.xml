@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/shiftValueStr"
+          android:title="@string/shiftValueStr" />
+    <item android:id="@+id/prefsButton" android:enabled="true" android:title="@string/prefsButton" android:visible="true" android:titleCondensed="@string/prefsButton"></item>
+</menu>
