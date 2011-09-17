@@ -19,6 +19,7 @@
             android:selectable="true" 
             android:defaultValue="true">
         </CheckBoxPreference>
+        <CheckBoxPreference android:key="@string/debugMode" android:title="@string/debugMode" android:summary="@string/debugRPMSummary"></CheckBoxPreference>
     </PreferenceCategory>
     
 </PreferenceScreen>

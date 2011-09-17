@@ -55,11 +55,12 @@ public class PluginActivity extends Activity  {
     private static final int RPM_PID = 0xC;
     private static final int kShiftDialogId = 0;
     
-//    private TextView textView;
-    
+   
     private ITorqueService torqueService;
     private Timer updateTimer;
 
+    private boolean useDebugRPM;
+    
     private Random generator;
     
     //private int shiftRPM;
@@ -127,6 +128,9 @@ public class PluginActivity extends Activity  {
                 break;
         }
         lightsView.setDisplayMode( mode );
+        
+        name = r.getString( R.string.debugMode );
+        useDebugRPM = preferences.getBoolean( name, true );
 
     }
     
@@ -325,7 +329,7 @@ public class PluginActivity extends Activity  {
         scrollView.addView( layout );
         
         setContentView( scrollView );
-        
+         
         */
     }
     
@@ -340,7 +344,7 @@ public class PluginActivity extends Activity  {
                 
                 float rpms = torqueService.getValueForPid( RPM_PID, true );
                         
-                if ( rpms != 0 ) {
+                if ( rpms != 0 || !useDebugRPM ) {
                     lightsView.setCurrentValue( (int) rpms );
                 } else {
                     int val = generator.nextInt();

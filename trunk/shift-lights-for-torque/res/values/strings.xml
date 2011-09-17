@@ -15,4 +15,6 @@
     <string name="prefsBars">Bars</string>
     <string name="listPref">listPref</string>
     <string name="summaryDisplayOptions">Select one of the display options</string>
+    <string name="debugMode">Debug Mode</string>
+    <string name="debugRPMSummary">Uses random numbers when ECU RPM data is not available</string>
 </resources>
