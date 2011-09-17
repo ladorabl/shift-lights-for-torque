@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, ShiftLightsActivity!</string>
+    <string name="app_name">ShiftLights</string>
+    <string name="shiftValueStr">Enter Shift Value</string>
+    <string name="buttonOK">OK</string>
+    <string name="prefsButton">Preferences</string>
+    <string name="prefDialogTitle">Select Lights Type</string>
+    <string name="selectOneOption">Select one option</string>
+    <string name="buttonCancel">Cancel</string>
+    <string name="showRPM">Show RPM</string>
+    <string name="showRPM_summary">Enables or disables display of RPM in addition to the lights</string>
+    <string name="prefLEDs">LEDs</string>
+    <string name="prefsScreen">Entire Screen</string>
+    <string name="prefsBars">Bars</string>
+    <string name="listPref">listPref</string>
+    <string name="summaryDisplayOptions">Select one of the display options</string>
+</resources>
