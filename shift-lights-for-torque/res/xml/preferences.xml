@@ -9,7 +9,7 @@
             android:entries="@array/prefsListArray" 
             android:entryValues="@array/prefsListValues" 
             android:key="@string/listPref" 
-            android:enabled="true" android:summary="@string/summaryDisplayOptions" android:selectable="true">
+            android:enabled="true" android:summary="@string/summaryDisplayOptions" android:selectable="true" android:defaultValue="0">
         </ListPreference>
         <CheckBoxPreference 
             android:title="@string/showRPM" 
@@ -17,9 +17,10 @@
             android:summary="@string/showRPM_summary" 
             android:enabled="true" 
             android:selectable="true" 
-            android:defaultValue="true">
+            android:defaultValue="true" android:disableDependentsState="true">
         </CheckBoxPreference>
-        <CheckBoxPreference android:key="@string/debugMode" android:title="@string/debugMode" android:summary="@string/debugRPMSummary"></CheckBoxPreference>
+        <CheckBoxPreference android:key="@string/ecoMode" android:title="@string/ecoModeTitle" android:summary="@string/ecoModeSummary" android:dependency="@string/showRPM" android:shouldDisableView="true" android:defaultValue="false"></CheckBoxPreference><CheckBoxPreference android:key="@string/debugMode" android:title="@string/debugMode" android:summary="@string/debugRPMSummary" android:defaultValue="false"></CheckBoxPreference>
+        
     </PreferenceCategory>
     
 </PreferenceScreen>

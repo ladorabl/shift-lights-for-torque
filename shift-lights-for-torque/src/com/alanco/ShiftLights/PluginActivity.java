@@ -73,9 +73,6 @@ public class PluginActivity extends Activity  {
         
        super.onCreate(savedInstanceState);
        
-       Log.i(getLocalClassName(), "onCreate" );
-       
-        
        lightsView = new LightsView( this );
        setContentView( lightsView );
             
@@ -130,8 +127,10 @@ public class PluginActivity extends Activity  {
         lightsView.setDisplayMode( mode );
         
         name = r.getString( R.string.debugMode );
-        useDebugRPM = preferences.getBoolean( name, true );
-
+        useDebugRPM = preferences.getBoolean( name, false );
+        
+        name = r.getString( R.string.ecoMode );
+        lightsView.setEcoMode( preferences.getBoolean( name, false ) );
     }
     
     //================================================================================
@@ -230,7 +229,6 @@ public class PluginActivity extends Activity  {
     protected void onResume() {
         
        super.onResume();
-       Log.i(getLocalClassName(), "onResume" );
 
        // Bind to the torque service
        Intent intent = new Intent();
@@ -239,8 +237,6 @@ public class PluginActivity extends Activity  {
 
        if (successfulBind) {
 
-           Log.i( TAG, "Successfull bind" );
-           
            updateTimer = new Timer();
            updateTimer.schedule(new TimerTask() { public void run() {
              updateLights();
@@ -367,7 +363,6 @@ public class PluginActivity extends Activity  {
      */
     private ServiceConnection connection = new ServiceConnection() {
        public void onServiceConnected(ComponentName arg0, IBinder service) {
-          Log.i( TAG, "onServiceConnected" );
           torqueService = ITorqueService.Stub.asInterface( service );
            
           if ( torqueService != null ) {
@@ -389,7 +384,6 @@ public class PluginActivity extends Activity  {
           }
        };
        public void onServiceDisconnected(ComponentName name) {
-          Log.i( TAG, "onServiceDisconnected" );
           torqueService = null;
        };
     };
