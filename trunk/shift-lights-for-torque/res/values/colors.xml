@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-	<color name="redColor">#FF0000</color>
-	<color name="marker_color">#AFFF</color>
-	<color name="text_color">#CCCC</color>
-	<color name="roll_color">#AAAA</color>
-	<color name="pitch_color">#f00</color>
-</resources>
-

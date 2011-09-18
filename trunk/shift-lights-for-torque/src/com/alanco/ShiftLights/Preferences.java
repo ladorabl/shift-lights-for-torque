@@ -17,15 +17,46 @@
 package com.alanco.ShiftLights;
 
 
+import android.content.SharedPreferences.Editor;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 
-public class Preferences extends PreferenceActivity {
+public class Preferences extends PreferenceActivity implements OnPreferenceChangeListener {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
 
         addPreferencesFromResource( R.xml.preferences );
+        
+        Resources r = this.getResources();
+        
+        String rpmKey = r.getString( R.string.showRPM ); 
+
+        findPreference( rpmKey ).setOnPreferenceChangeListener( this );
+    }
+    
+    //====================================================================
+    // if RPM setting is true, then eco mode cannot be enabled
+    //===================================================================
+    @Override
+    public boolean onPreferenceChange( Preference pref, Object newValue ) {
+     
+        final String val = newValue.toString();
+        
+        if ( val.equals( "true" ) ) {
+
+            Resources r = this.getResources();
+    
+            String ecoKey = r.getString( R.string.ecoMode );
+
+            CheckBoxPreference cbp = (CheckBoxPreference) findPreference( ecoKey );
+            cbp.setChecked( false );
+        }
+        return true;
     }
  }

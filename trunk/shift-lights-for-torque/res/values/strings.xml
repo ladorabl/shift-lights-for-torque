@@ -9,7 +9,7 @@
     <string name="selectOneOption">Select one option</string>
     <string name="buttonCancel">Cancel</string>
     <string name="showRPM">Show RPM</string>
-    <string name="showRPM_summary">Enables or disables display of RPM in addition to the lights</string>
+    <string name="showRPM_summary">Enables or disables display of RPM in addition to the lights. When enabled, Eco Mode is disabled.</string>
     <string name="prefLEDs">LEDs</string>
     <string name="prefsScreen">Entire Screen</string>
     <string name="prefsBars">Bars</string>
@@ -17,4 +17,7 @@
     <string name="summaryDisplayOptions">Select one of the display options</string>
     <string name="debugMode">Debug Mode</string>
     <string name="debugRPMSummary">Uses random numbers when ECU RPM data is not available</string>
+    <string name="ecoMode">ecoMode</string>
+    <string name="ecoModeTitle">Economy Mode</string>
+    <string name="ecoModeSummary">When checked, uses less CPU</string>
 </resources>

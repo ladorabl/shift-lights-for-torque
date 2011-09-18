@@ -53,6 +53,8 @@ public class LightsView extends View {
     private boolean showRPM;
 
     private int cnt;
+
+    private boolean ecoMode;
     
     private static final int kGreenLEDs =  6;
     private static final int kYellowLEDs = 6;
@@ -189,13 +191,16 @@ public class LightsView extends View {
         return limitValue;
     }
     
+    public void setEcoMode( boolean val ) {
+        ecoMode = val;
+    }
     //==========================================================================
     public void setCurrentValue( int value ) {
         currentValue = value;
         
         int tmp = currentValue * 20 / limitValue;
 
-        if ( tmp != cnt ) {
+        if ( tmp != cnt || !ecoMode ) {
             cnt = tmp;
             postInvalidate();
         }
