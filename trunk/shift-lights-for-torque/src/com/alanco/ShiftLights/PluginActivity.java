@@ -45,6 +45,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 
@@ -55,7 +56,8 @@ public class PluginActivity extends Activity  {
     private static final int RPM_PID = 0xC;
     private static final int kShiftDialogId = 0;
     
-   
+    private float oldBrightness;
+
     private ITorqueService torqueService;
     private Timer updateTimer;
 
@@ -108,22 +110,16 @@ public class PluginActivity extends Activity  {
         name = r.getString( R.string.listPref );
         int selectedPosition = Integer.parseInt( preferences.getString( name, "0" ) );
         
-        LightsMode mode = lightsView.getDisplayMode();
-                
-        switch ( selectedPosition ) {
-            case 0:
-                mode = LightsMode.eLedMode;
-                break;
-            case 1:
-                mode = LightsMode.eScreenMode;
-                break;
-            case 2:
-                mode = LightsMode.eBarMode;
-                break;
-            case 3:
-                mode = LightsMode.eFlash;
-                break;
+        LightsMode mode = LightsMode.eLedMode;
+           
+        try {
+            mode = LightsMode.values() [selectedPosition];
         }
+        catch ( ArrayIndexOutOfBoundsException  e ) {
+            e.printStackTrace();
+            mode = lightsView.getDisplayMode();
+        }
+        
         lightsView.setDisplayMode( mode );
         
         name = r.getString( R.string.debugMode );
@@ -237,6 +233,16 @@ public class PluginActivity extends Activity  {
 
        if (successfulBind) {
 
+           WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+           
+           // make as bright as possible
+           oldBrightness = layoutParams.screenBrightness;
+           layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
+
+           getWindow().setAttributes( layoutParams );
+           
+           getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
+           
            updateTimer = new Timer();
            updateTimer.schedule(new TimerTask() { public void run() {
              updateLights();
@@ -252,7 +258,14 @@ public class PluginActivity extends Activity  {
        super.onPause();
        updateTimer.cancel();
        if ( connection != null ) {
+           
            unbindService( connection );
+           
+           getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
+           
+           WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+           layoutParams.screenBrightness = oldBrightness;
+           getWindow().setAttributes( layoutParams );
        }
     }
 
