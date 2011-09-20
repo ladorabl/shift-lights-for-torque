@@ -83,6 +83,9 @@ public class PluginActivity extends Activity  {
        setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE );
        
        generator = new Random();
+       
+       String rpmTip = getResources().getString( R.string.enterRPMtip );
+       Toast.makeText( this, rpmTip, Toast.LENGTH_SHORT ).show();
     }
     
     //===============================================================================
@@ -237,7 +240,7 @@ public class PluginActivity extends Activity  {
            
            // make as bright as possible
            oldBrightness = layoutParams.screenBrightness;
-           layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
+           layoutParams.screenBrightness = (float) 1.0;//WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
 
            getWindow().setAttributes( layoutParams );
            
@@ -382,14 +385,19 @@ public class PluginActivity extends Activity  {
              int rpmValue = 6000;
              try {
                 String rpm = torqueService.retrieveProfileData( ProfileString );
-                if ( rpm == null || rpm.isEmpty() ) {
+                if ( rpm == null || rpm.length() == 0 ) {
                     String profile [] = torqueService.getVehicleProfileInformation();
                     rpm = profile [5];
                 }
-                if ( rpm.isEmpty() ) {
+                if ( rpm.length() == 0 ) {
                     rpm = "6000.0";
                 }
-                rpmValue = (int) Float.parseFloat( rpm );
+                try {
+                    rpmValue = (int) Float.parseFloat( rpm );
+                }
+                catch ( NumberFormatException e ) {
+                    e.printStackTrace();
+                }
              } catch (RemoteException e) {
                 Log.i( TAG, "failed to get profile" );
              }
