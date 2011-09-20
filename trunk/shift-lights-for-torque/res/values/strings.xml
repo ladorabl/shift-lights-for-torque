@@ -20,4 +20,5 @@
     <string name="ecoMode">ecoMode</string>
     <string name="ecoModeTitle">Economy Mode</string>
     <string name="ecoModeSummary">When checked, uses less CPU</string>
+    <string name="enterRPMtip">Don\'t forget to enter correct shift RPM!</string>
 </resources>
