@@ -17,14 +17,13 @@
 package com.alanco.ShiftLights;
 
 
-import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
-
+ 
 public class Preferences extends PreferenceActivity implements OnPreferenceChangeListener {
 
     @Override

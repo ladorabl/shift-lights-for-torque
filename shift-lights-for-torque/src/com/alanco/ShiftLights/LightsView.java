@@ -55,6 +55,7 @@ public class LightsView extends View {
     private int cnt;
 
     private boolean ecoMode;
+
     
     private static final int kGreenLEDs =  6;
     private static final int kYellowLEDs = 6;
