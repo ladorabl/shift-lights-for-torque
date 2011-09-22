@@ -234,7 +234,7 @@ public class PluginActivity extends Activity  {
        intent.setClassName("org.prowl.torque", "org.prowl.torque.remote.TorqueService");
        boolean successfulBind = bindService(intent, connection, 0);
 
-       if (successfulBind) {
+       if (successfulBind ) {
 
            WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
            
@@ -246,10 +246,13 @@ public class PluginActivity extends Activity  {
            
            getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
            
-           updateTimer = new Timer();
-           updateTimer.schedule(new TimerTask() { public void run() {
-             updateLights();
-          }}, 50, 50 );
+//           if ( updateTimer != null ) {
+//               updateTimer.cancel();
+//           }
+//           updateTimer = new Timer();
+//           updateTimer.schedule(new TimerTask() { public void run() {
+//             updateLights();
+//          }}, 50, 50 );
        }
     }
 
@@ -259,7 +262,9 @@ public class PluginActivity extends Activity  {
     @Override
     protected void onPause() {
        super.onPause();
-       updateTimer.cancel();
+       if ( torqueService != null ) {
+           updateTimer.cancel();
+       }
        if ( connection != null ) {
            
            unbindService( connection );
@@ -300,7 +305,7 @@ public class PluginActivity extends Activity  {
                 lightsView.setLimitValue( rpmValue );
                 if ( torqueService != null ) {
                     try {
-                        torqueService.storeInProfile( PluginActivity.ProfileString, Float.toHexString( (float)rpmValue ), true );
+                        torqueService.storeInProfile( PluginActivity.ProfileString, Float.toString( (float)rpmValue ), true );
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -315,34 +320,6 @@ public class PluginActivity extends Activity  {
     private void enterShiftValue() {
         
         showDialog( kShiftDialogId );
-        
-        /* commented out - an example of a manual way to create an input dialog
-        LinearLayout layout = new LinearLayout( this );
-        
-        EditText inputBox = new EditText( this );
-        inputBox.setText( "7500" );
-        layout.addView( inputBox );
-
-        Button okBtn = new Button( this );
-        okBtn.setText( "OK" );
-        okBtn.setOnClickListener( new View.OnClickListener() { 
-
-            @Override
-            public void onClick(View arg0) {
-                String value = inputBox.getText().toString();
-                setContentView( R.layout.main );
-            }
-        } );
-        
-        layout.addView( okBtn );
-        
-        ScrollView scrollView = new ScrollView( this );
-
-        scrollView.addView( layout );
-        
-        setContentView( scrollView );
-         
-        */
     }
     
     //==============================================================================================
@@ -364,7 +341,11 @@ public class PluginActivity extends Activity  {
                         val = -val;
                     }
                     
-                    lightsView.setCurrentValue( val % lightsView.getLimitValue() );
+                    int limit = lightsView.getLimitValue();
+                    if ( limit <= 0 ) {
+                        limit = 1;
+                    }
+                    lightsView.setCurrentValue( val % limit );
                 }
             }
             catch( RemoteException e ) {
@@ -379,15 +360,40 @@ public class PluginActivity extends Activity  {
      */
     private ServiceConnection connection = new ServiceConnection() {
        public void onServiceConnected(ComponentName arg0, IBinder service) {
-          torqueService = ITorqueService.Stub.asInterface( service );
            
-          if ( torqueService != null ) {
-             int rpmValue = 6000;
+          if ( updateTimer != null ) {
+              updateTimer.cancel();
+          }
+ 
+          ITorqueService tmpService = ITorqueService.Stub.asInterface( service );
+           
+          int rpmValue = 6000;
+
+          if ( tmpService != null ) {
+             
+             // get the max RPM value from the vehicle profile, it it exists,
+             // to use as the initial shift value (when private info is absent) 
              try {
-                String rpm = torqueService.retrieveProfileData( ProfileString );
+                 
+                 int apiVersion = tmpService.getVersion();
+                 if ( apiVersion < 6 ) {
+                     Toast.makeText( getApplicationContext(), R.string.wrongAPI, Toast.LENGTH_LONG ).show();
+                     torqueService = null;
+                     return;
+                 }
+                 
+                 // try the private profile data first
+                String rpm = tmpService.retrieveProfileData( ProfileString );
+                
                 if ( rpm == null || rpm.length() == 0 ) {
-                    String profile [] = torqueService.getVehicleProfileInformation();
-                    rpm = profile [5];
+                    
+                    // nope, no private - get from the vehicle profile
+                    String profile [] = tmpService.getVehicleProfileInformation();
+                    
+                    if ( profile != null && profile.length >= 5 ) {
+                        rpm = profile [5];
+                    }
+
                 }
                 if ( rpm.length() == 0 ) {
                     rpm = "6000.0";
@@ -401,8 +407,19 @@ public class PluginActivity extends Activity  {
              } catch (RemoteException e) {
                 Log.i( TAG, "failed to get profile" );
              }
-             lightsView.setLimitValue( rpmValue );
           }
+          lightsView.setLimitValue( rpmValue );
+          
+          torqueService = tmpService;
+          
+          updateTimer = new Timer();
+          updateTimer.schedule(
+              new TimerTask() { 
+                  public void run() {
+                      updateLights();
+                  }
+              }, 
+              50, 50 );
        };
        public void onServiceDisconnected(ComponentName name) {
           torqueService = null;
