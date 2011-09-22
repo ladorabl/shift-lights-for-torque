@@ -199,11 +199,14 @@ public class LightsView extends View {
     public void setCurrentValue( int value ) {
         currentValue = value;
         
-        int tmp = currentValue * 20 / limitValue;
-
-        if ( tmp != cnt || !ecoMode ) {
-            cnt = tmp;
-            postInvalidate();
+        if ( limitValue != 0 ) {
+            
+            int tmp = currentValue * 20 / limitValue;
+            
+            if ( tmp != cnt || !ecoMode ) {
+                cnt = tmp;
+                postInvalidate();
+            }
         }
     }
     
