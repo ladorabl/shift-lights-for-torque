@@ -57,10 +57,11 @@ public class LightsView extends View {
     private boolean ecoMode;
 
     
-    private static final int kGreenLEDs =  6;
+    private static final int kRedLEDs    = 6;
     private static final int kYellowLEDs = 6;
-    private static final int kOrangeLEDs = 6;
-// implicit    private static final int kRedLEDs    = 2;
+    private static final int kOrangeLEDs = 5;
+    // implicit private static final int kGreenLEDs =  3;
+    
     
     public LightsView(Context context) {
         super(context);
@@ -84,30 +85,30 @@ public class LightsView extends View {
         redPaint.setColor( Color.RED );//r.getColor( R.color.redColor )  );
         redPaint.setStyle( Paint.Style.FILL );
         
-        textPaint = redPaint;
+        greenPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
+        greenPaint.setColor( Color.GREEN );
+
+        textPaint = greenPaint;
         textPaint.setStrokeWidth( (float) 20.0 );
         textPaint.setTextSize( textPaint.getTextSize() * 8 );
         textPaint.setTextScaleX( (float) 3.0 );
-        
-        greenPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
-        greenPaint.setColor( Color.GREEN );
-        
+
         yellowPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
         yellowPaint.setColor( Color.YELLOW );
-        
+         
         orangePaint = new Paint( Paint.ANTI_ALIAS_FLAG );
         orangePaint.setColor( Color.rgb( 255, 165, 0 ) );
-        
+         
         currentValue = 1;
-
+ 
         // get LED bitmaps
-        yellowBitmap = createBitmap( R.drawable.yellow );
+        yellowBitmap = createBitmap( R.drawable.double_yellow );
 
-        greenBitmap  = createBitmap( R.drawable.green );
+        greenBitmap  = createBitmap( R.drawable.double_green );
         
-        redBitmap    = createBitmap( R.drawable.red );
+        redBitmap    = createBitmap( R.drawable.double_red );
 
-        orangeBitmap = createBitmap( R.drawable.orange );
+        orangeBitmap = createBitmap( R.drawable.double_orange );
     }
     
     //=================================================================
@@ -156,13 +157,13 @@ public class LightsView extends View {
         if ( measuredWidth != 0 ) {
             
             int ledWidth = measuredWidth / 20;
-            int ledHeight = ledWidth;
+            int ledHeight = ledWidth * 2;
             
             if ( yellowBitmap.getWidth() != ledWidth ) {
-                yellowBitmap = Bitmap.createScaledBitmap( yellowBitmap, ledHeight, ledWidth, true );
-                greenBitmap  = Bitmap.createScaledBitmap( greenBitmap,  ledHeight, ledWidth, true );
-                orangeBitmap = Bitmap.createScaledBitmap( orangeBitmap, ledHeight, ledWidth, true );
-                redBitmap    = Bitmap.createScaledBitmap( redBitmap,    ledHeight, ledWidth, true );
+                yellowBitmap = Bitmap.createScaledBitmap( yellowBitmap, ledWidth, ledHeight, true );
+                greenBitmap  = Bitmap.createScaledBitmap( greenBitmap,  ledWidth, ledHeight, true );
+                orangeBitmap = Bitmap.createScaledBitmap( orangeBitmap, ledWidth, ledHeight, true );
+                redBitmap    = Bitmap.createScaledBitmap( redBitmap,    ledWidth, ledHeight, true );
             }
         }
     }
@@ -227,16 +228,16 @@ public class LightsView extends View {
             
             Bitmap tmp = null;
             
-            if ( i < kGreenLEDs ) { 
-                tmp = greenBitmap;
+            if ( i < kRedLEDs ) { 
+                tmp = redBitmap;
             } else {
-                if ( i < kYellowLEDs + kGreenLEDs ) {
+                if ( i < kYellowLEDs + kRedLEDs ) {
                     tmp = yellowBitmap;
                 } else {
-                    if ( i < kYellowLEDs + kGreenLEDs + kOrangeLEDs ) {
+                    if ( i < kYellowLEDs + kRedLEDs + kOrangeLEDs ) {
                         tmp = orangeBitmap;
                     } else {
-                        tmp = redBitmap;
+                        tmp = greenBitmap;
                     }
                 }
             } 
@@ -271,16 +272,16 @@ public class LightsView extends View {
         
         int col = Color.GRAY;
         
-        if ( cnt < kGreenLEDs ) { 
-            col = Color.GREEN;
+        if ( cnt < kRedLEDs ) { 
+            col = Color.RED;
         } else {
-            if ( cnt < kYellowLEDs + kGreenLEDs ) {
+            if ( cnt < kYellowLEDs + kRedLEDs ) {
                 col = Color.YELLOW;
             } else {
-                if ( cnt < kYellowLEDs + kGreenLEDs + kOrangeLEDs ) {
+                if ( cnt < kYellowLEDs + kRedLEDs + kOrangeLEDs ) {
                     col = Color.rgb( 255, 165, 0 );
                 } else {
-                    col = Color.RED;
+                    col = Color.GREEN;
                 }
             }
         }
@@ -301,16 +302,16 @@ public class LightsView extends View {
 
             Paint tmp = null;
             
-            if ( i < kGreenLEDs ) { 
-                tmp = greenPaint;
+            if ( i < kRedLEDs ) { 
+                tmp = redPaint;
             } else {
-                if ( i < kYellowLEDs + kGreenLEDs ) {
+                if ( i < kYellowLEDs + kRedLEDs ) {
                     tmp = yellowPaint;
                 } else {
-                    if ( i < kYellowLEDs + kGreenLEDs + kOrangeLEDs ) {
+                    if ( i < kYellowLEDs + kRedLEDs + kOrangeLEDs ) {
                         tmp = orangePaint;
                     } else {
-                        tmp = redPaint;
+                        tmp = greenPaint;
                     }
                 }
             }
@@ -325,8 +326,8 @@ public class LightsView extends View {
     //=============================================================================    
     private void drawFlash( Canvas canvas ) {
     
-        if ( cnt >= kGreenLEDs + kYellowLEDs + kOrangeLEDs ) {
-            canvas.drawColor( Color.RED );
+        if ( cnt >= kRedLEDs + kYellowLEDs + kOrangeLEDs ) {
+            canvas.drawColor( Color.GREEN );
         }
         
         drawRPMText( canvas );

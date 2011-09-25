@@ -65,7 +65,7 @@ public class PluginActivity extends Activity  {
     
     private Random generator;
     
-    //private int shiftRPM;
+    private int shiftRPM;
     
     private LightsView lightsView;
     
@@ -246,13 +246,6 @@ public class PluginActivity extends Activity  {
            
            getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
            
-//           if ( updateTimer != null ) {
-//               updateTimer.cancel();
-//           }
-//           updateTimer = new Timer();
-//           updateTimer.schedule(new TimerTask() { public void run() {
-//             updateLights();
-//          }}, 50, 50 );
        }
     }
 
@@ -262,18 +255,22 @@ public class PluginActivity extends Activity  {
     @Override
     protected void onPause() {
        super.onPause();
-       if ( torqueService != null ) {
-           updateTimer.cancel();
-       }
-       if ( connection != null ) {
+       synchronized ( this ) {
            
-           unbindService( connection );
-           
-           getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
-           
-           WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-           layoutParams.screenBrightness = oldBrightness;
-           getWindow().setAttributes( layoutParams );
+           if ( torqueService != null ) {
+               updateTimer.cancel();
+           }
+    
+           if ( connection != null ) {
+               
+               unbindService( connection );
+               
+               getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
+               
+               WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+               layoutParams.screenBrightness = oldBrightness;
+               getWindow().setAttributes( layoutParams );
+           }
        }
     }
 
@@ -297,17 +294,28 @@ public class PluginActivity extends Activity  {
         
         @Override
         public void onDismiss(DialogInterface dialog) {
+            
             RPMInputDialog rpmDlg = (RPMInputDialog)dialog;
+            
             int rpmValue = rpmDlg.getRpmValue();
+            
             if ( rpmValue < 1000 ) {
                 Toast.makeText( getBaseContext(), "Really? Enter valid (1000+) number", Toast.LENGTH_SHORT ).show();
             } else {
+                
+                shiftRPM = rpmValue;
+                
                 lightsView.setLimitValue( rpmValue );
-                if ( torqueService != null ) {
-                    try {
-                        torqueService.storeInProfile( PluginActivity.ProfileString, Float.toString( (float)rpmValue ), true );
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
+
+                synchronized( this ) {
+                    
+                    if ( torqueService != null ) {
+                        
+                        try {
+                            torqueService.storeInProfile( PluginActivity.ProfileString, Float.toString( (float)rpmValue ), true );
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -327,29 +335,31 @@ public class PluginActivity extends Activity  {
     //==============================================================================================
     private void updateLights() {
         
-        if ( torqueService != null ) {
-            
-            try {
+        synchronized( this ) {
+            if ( torqueService != null ) {
                 
-                float rpms = torqueService.getValueForPid( RPM_PID, true );
-                        
-                if ( rpms != 0 || !useDebugRPM ) {
-                    lightsView.setCurrentValue( (int) rpms );
-                } else {
-                    int val = generator.nextInt();
-                    if ( val < 0 ) {
-                        val = -val;
-                    }
+                try {
                     
-                    int limit = lightsView.getLimitValue();
-                    if ( limit <= 0 ) {
-                        limit = 1;
+                    float rpms = torqueService.getValueForPid( RPM_PID, true );
+                            
+                    if ( rpms != 0 || !useDebugRPM ) {
+                        lightsView.setCurrentValue( (int) rpms );
+                    } else {
+                        int val = generator.nextInt();
+                        if ( val < 0 ) {
+                            val = -val;
+                        }
+                        
+                        int limit = lightsView.getLimitValue();
+                        if ( limit <= 0 ) {
+                            limit = 1;
+                        }
+                        lightsView.setCurrentValue( val % limit );
                     }
-                    lightsView.setCurrentValue( val % limit );
                 }
-            }
-            catch( RemoteException e ) {
-                Log.e( getClass().getCanonicalName(), e.getMessage(), e );
+                catch( RemoteException e ) {
+                    Log.e( getClass().getCanonicalName(), e.getMessage(), e );
+                }
             }
         }
     }
@@ -367,62 +377,74 @@ public class PluginActivity extends Activity  {
  
           ITorqueService tmpService = ITorqueService.Stub.asInterface( service );
            
-          int rpmValue = 6000;
-
-          if ( tmpService != null ) {
-             
-             // get the max RPM value from the vehicle profile, it it exists,
-             // to use as the initial shift value (when private info is absent) 
-             try {
+          if ( shiftRPM == 0 ) {
+              
+              shiftRPM = 6000;
+              
+              if ( tmpService != null ) {
                  
-                 int apiVersion = tmpService.getVersion();
-                 if ( apiVersion < 6 ) {
-                     Toast.makeText( getApplicationContext(), R.string.wrongAPI, Toast.LENGTH_LONG ).show();
-                     torqueService = null;
-                     return;
-                 }
-                 
-                 // try the private profile data first
-                String rpm = tmpService.retrieveProfileData( ProfileString );
-                
-                if ( rpm == null || rpm.length() == 0 ) {
+                 // get the max RPM value from the vehicle profile, it it exists,
+                 // to use as the initial shift value (when private info is absent) 
+                 try {
+                     
+                     int apiVersion = tmpService.getVersion();
+                     if ( apiVersion < 6 ) {
+                         Toast.makeText( getApplicationContext(), R.string.wrongAPI, Toast.LENGTH_LONG ).show();
+                         torqueService = null;
+                         return;
+                     }
+                     
+                     // try the private profile data first
+                    String rpm = tmpService.retrieveProfileData( ProfileString );
                     
-                    // nope, no private - get from the vehicle profile
-                    String profile [] = tmpService.getVehicleProfileInformation();
-                    
-                    if ( profile != null && profile.length >= 5 ) {
-                        rpm = profile [5];
+                    if ( rpm == null || rpm.length() == 0 ) {
+                        
+                        // nope, no private - get from the vehicle profile
+                        String profile [] = tmpService.getVehicleProfileInformation();
+                        
+                        if ( profile != null && profile.length >= 5 ) {
+                            rpm = profile [5];
+                        }
+    
                     }
-
-                }
-                if ( rpm.length() == 0 ) {
-                    rpm = "6000.0";
-                }
-                try {
-                    rpmValue = (int) Float.parseFloat( rpm );
-                }
-                catch ( NumberFormatException e ) {
-                    e.printStackTrace();
-                }
-             } catch (RemoteException e) {
-                Log.i( TAG, "failed to get profile" );
-             }
+                    if ( rpm.length() == 0 ) {
+                        rpm = "6000.0";
+                    }
+                    try {
+                        shiftRPM = (int) Float.parseFloat( rpm );
+                    }
+                    catch ( NumberFormatException e ) {
+                        e.printStackTrace();
+                    }
+                 } catch (RemoteException e) {
+                    Log.i( TAG, "failed to get profile" );
+                 }
+              }
+              
+              lightsView.setLimitValue( shiftRPM );
           }
-          lightsView.setLimitValue( rpmValue );
           
-          torqueService = tmpService;
+          synchronized( this ) {
+              torqueService = tmpService;
+              updateTimer = new Timer();
+              updateTimer.schedule(
+                  new TimerTask() { 
+                      public void run() {
+                          updateLights();
+                      }
+                  }, 
+                  50, 50 );
+          }
           
-          updateTimer = new Timer();
-          updateTimer.schedule(
-              new TimerTask() { 
-                  public void run() {
-                      updateLights();
-                  }
-              }, 
-              50, 50 );
        };
-       public void onServiceDisconnected(ComponentName name) {
-          torqueService = null;
+       //===============================================================================
+       public void onServiceDisconnected( ComponentName name ) {
+           synchronized( this ) {
+               torqueService = null;
+               if ( updateTimer != null ) {
+                   updateTimer.cancel();
+               }
+           }
        };
     };
 }
