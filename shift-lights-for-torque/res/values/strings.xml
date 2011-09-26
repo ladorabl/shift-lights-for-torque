@@ -22,4 +22,8 @@
     <string name="ecoModeSummary">When checked, uses less CPU</string>
     <string name="enterRPMtip">Don\'t forget to enter correct shift RPM!</string>
     <string name="wrongAPI">Wrong API version - consider upgrading Torque</string>
+    <string name="colorOrder">Color display order</string>
+    <string name="colorOrderSummary">Select what color is displayed first/last - red or green</string>
+    <string name="prefsDisplayOrder">Display Order</string>
+    <string name="prefsDisplayOrderSummary">Specify how shift lights are drawn</string>
 </resources>
