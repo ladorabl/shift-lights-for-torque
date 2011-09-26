@@ -12,4 +12,20 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+    <string-array name="prefsListColorOrderArray">
+        <item>Green first</item>
+        <item>Red first</item>
+    </string-array>
+    <string-array name="prefsListColorOrderValues">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="prefsListDisplayOrderArray">
+        <item>Left to right</item>
+        <item>Outside in</item>
+    </string-array>
+    <string-array name="prefsListDisaplyOrderValues">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
 </resources>

@@ -19,7 +19,9 @@
             android:selectable="true" 
             android:defaultValue="true" android:disableDependentsState="true">
         </CheckBoxPreference>
-        <CheckBoxPreference android:key="@string/ecoMode" android:title="@string/ecoModeTitle" android:summary="@string/ecoModeSummary" android:dependency="@string/showRPM" android:shouldDisableView="true" android:defaultValue="false"></CheckBoxPreference><CheckBoxPreference android:key="@string/debugMode" android:title="@string/debugMode" android:summary="@string/debugRPMSummary" android:defaultValue="false"></CheckBoxPreference>
+        <CheckBoxPreference android:key="@string/ecoMode" android:title="@string/ecoModeTitle" android:summary="@string/ecoModeSummary" android:dependency="@string/showRPM" android:shouldDisableView="true" android:defaultValue="false"></CheckBoxPreference><ListPreference android:title="@string/colorOrder" android:summary="@string/colorOrderSummary" android:defaultValue="0" android:key="colorOrder" android:entries="@array/prefsListColorOrderArray" android:entryValues="@array/prefsListColorOrderValues" android:enabled="true" android:selectable="true"></ListPreference><ListPreference android:title="@string/prefsDisplayOrder" android:summary="@string/prefsDisplayOrderSummary" android:enabled="true" android:key="prefDisplayOrder" android:selectable="true" android:entries="@array/prefsListDisplayOrderArray" android:entryValues="@array/prefsListDisaplyOrderValues" android:defaultValue="0"></ListPreference><CheckBoxPreference android:key="@string/debugMode" android:title="@string/debugMode" android:summary="@string/debugRPMSummary" android:defaultValue="false"></CheckBoxPreference>
+        
+        
         
     </PreferenceCategory>
     

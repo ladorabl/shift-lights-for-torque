@@ -19,7 +19,9 @@ package com.alanco.ShiftLights;
 
 import org.prowl.torque.remote.ITorqueService;
 
-import com.alanco.ShiftLights.LightsView.LightsMode;
+import com.alanco.ShiftLights.LightsView.EColorOrder;
+import com.alanco.ShiftLights.LightsView.EDisplayOrder;
+import com.alanco.ShiftLights.LightsView.ELightsMode;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -113,10 +115,10 @@ public class PluginActivity extends Activity  {
         name = r.getString( R.string.listPref );
         int selectedPosition = Integer.parseInt( preferences.getString( name, "0" ) );
         
-        LightsMode mode = LightsMode.eLedMode;
+        ELightsMode mode = ELightsMode.eLedMode;
            
         try {
-            mode = LightsMode.values() [selectedPosition];
+            mode = ELightsMode.values() [selectedPosition];
         }
         catch ( ArrayIndexOutOfBoundsException  e ) {
             e.printStackTrace();
@@ -130,6 +132,28 @@ public class PluginActivity extends Activity  {
         
         name = r.getString( R.string.ecoMode );
         lightsView.setEcoMode( preferences.getBoolean( name, false ) );
+        
+        String tmp = preferences.getString( "colorOrder", "0" );
+        selectedPosition = Integer.parseInt( tmp );
+        EColorOrder colorOrder = EColorOrder.eGreenFirst;
+        try {
+            colorOrder = EColorOrder.values() [selectedPosition];
+        }
+        catch ( ArrayIndexOutOfBoundsException e ) {
+            e.printStackTrace();
+        }
+        lightsView.setColorOrder( colorOrder );
+        
+        tmp = preferences.getString( "prefDisplayOrder", "0" );
+        selectedPosition = Integer.parseInt( tmp );
+        EDisplayOrder displayOrder = EDisplayOrder.eLeftToRight;
+        try {
+            displayOrder = EDisplayOrder.values() [selectedPosition];
+        }
+        catch ( ArrayIndexOutOfBoundsException e ) {
+            e.printStackTrace();
+        }
+        lightsView.setDisplayOrder( displayOrder );
     }
     
     //================================================================================

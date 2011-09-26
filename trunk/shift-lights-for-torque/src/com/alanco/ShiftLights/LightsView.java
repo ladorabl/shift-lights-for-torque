@@ -31,10 +31,23 @@ import android.graphics.drawable.Drawable;
 
 public class LightsView extends View {
 
-    public enum LightsMode {
+    // determines how the shift lights are drawn
+    public enum ELightsMode {
         eLedMode, eScreenMode, eBarMode, eFlash
     }
-    private LightsMode displayMode;
+    private ELightsMode displayMode;
+    
+    // determines what color is drawn first and which is last (between red and green)
+    public enum EColorOrder {
+        eGreenFirst, eRedFirst
+    }
+    private EColorOrder colorOrder = EColorOrder.eGreenFirst;
+    
+    // determintes the mode of drawing
+    public enum EDisplayOrder {
+        eLeftToRight, eOutsideIn
+    }
+    private EDisplayOrder displayOrder = EDisplayOrder.eLeftToRight;
     
     private int limitValue;
     private int currentValue;
@@ -57,9 +70,9 @@ public class LightsView extends View {
     private boolean ecoMode;
 
     
-    private static final int kRedLEDs    = 6;
-    private static final int kYellowLEDs = 6;
-    private static final int kOrangeLEDs = 5;
+    private static final int kFirstLEDs    = 6;
+    private static final int kSecondLEDs = 6;
+    private static final int kThirdLEDs = 5;
     // implicit private static final int kGreenLEDs =  3;
     
     
@@ -88,7 +101,7 @@ public class LightsView extends View {
         greenPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
         greenPaint.setColor( Color.GREEN );
 
-        textPaint = greenPaint;
+        textPaint = new Paint( greenPaint );
         textPaint.setStrokeWidth( (float) 20.0 );
         textPaint.setTextSize( textPaint.getTextSize() * 8 );
         textPaint.setTextScaleX( (float) 3.0 );
@@ -172,14 +185,30 @@ public class LightsView extends View {
     void setShowRPM( boolean value ) {
         showRPM = value;
     }
+    
     //=========================================================================
-    public void setDisplayMode( LightsMode mode ) {
+    public void setDisplayMode( ELightsMode mode ) {
         displayMode = mode;
     }
     
     //=========================================================================
-    public LightsMode getDisplayMode() {
+    public ELightsMode getDisplayMode() {
         return displayMode;
+    }
+    
+    //=========================================================================
+    public void setColorOrder( EColorOrder order ) {
+        colorOrder = order;
+        if ( colorOrder == EColorOrder.eGreenFirst ) {
+            textPaint.setColor( Color.RED );
+        } else {
+            textPaint.setColor( Color.GREEN );
+        }
+    }
+    
+    //=========================================================================
+    public void setDisplayOrder( EDisplayOrder order ) {
+        displayOrder = order;
     }
     
     //=========================================================================
@@ -212,8 +241,63 @@ public class LightsView extends View {
     }
     
     //=============================================================================
-    private void drawLEDs( Canvas canvas ) {
+    // draw the LEDs starting at the ends growing towards the center
+    //=============================================================================
+    private void drawLEDsOutsideIn( Canvas canvas ) {
+
+        int measuredHeight = getMeasuredHeight();
+        int measuredWidth  = getMeasuredWidth();
         
+        int iterations = ( cnt + 1 ) / 2;
+        
+        int px1 = 0;
+        int px2 = measuredWidth - yellowBitmap.getWidth();
+        
+        int py = measuredHeight / 2;
+        
+        py -= yellowBitmap.getHeight() / 2;
+ 
+        Bitmap firstBitmap;
+        Bitmap lastBitmap;
+        
+        if ( colorOrder == EColorOrder.eGreenFirst ) {
+            firstBitmap = greenBitmap;
+            lastBitmap  = redBitmap;
+        } else {
+            firstBitmap = redBitmap;
+            lastBitmap  = greenBitmap;
+        }
+
+        for ( int i = 0, position = 0; i < iterations; ++i ) {
+        
+            Bitmap tmp = null;
+            
+            if ( position < kFirstLEDs ) { 
+                tmp = firstBitmap;
+            } else {
+                if ( position < kSecondLEDs + kFirstLEDs ) {
+                    tmp = yellowBitmap;
+                } else {
+                    if ( position < kFirstLEDs + kSecondLEDs + kThirdLEDs ) {
+                        tmp = orangeBitmap;
+                    } else {
+                        tmp = lastBitmap;
+                    }
+                }
+            } 
+            position += 2;
+            
+            canvas.drawBitmap( tmp, px1, py, null );
+            canvas.drawBitmap( tmp, px2, py, null );
+
+            px1 += yellowBitmap.getWidth();
+            px2 -= yellowBitmap.getWidth();
+        }
+    }
+
+    //=============================================================================
+    private void drawLEDsLeft2Right( Canvas canvas ) {
+    
         int measuredHeight = getMeasuredHeight();
 
         int px = 0;
@@ -221,37 +305,57 @@ public class LightsView extends View {
         
         py -= yellowBitmap.getHeight() / 2;
         
-        Matrix matrix = new Matrix();
-        matrix.reset();
-      
+        Bitmap firstBitmap;
+        Bitmap lastBitmap;
+        
+        if ( colorOrder == EColorOrder.eGreenFirst ) {
+            firstBitmap = greenBitmap;
+            lastBitmap  = redBitmap;
+        } else {
+            firstBitmap = redBitmap;
+            lastBitmap  = greenBitmap;
+        }
+        
         for ( int i = 0; i < cnt; ++i ) {
             
             Bitmap tmp = null;
             
-            if ( i < kRedLEDs ) { 
-                tmp = redBitmap;
+            if ( i < kFirstLEDs ) { 
+                tmp = firstBitmap;
             } else {
-                if ( i < kYellowLEDs + kRedLEDs ) {
+                if ( i < kSecondLEDs + kFirstLEDs ) {
                     tmp = yellowBitmap;
                 } else {
-                    if ( i < kYellowLEDs + kRedLEDs + kOrangeLEDs ) {
+                    if ( i < kFirstLEDs + kSecondLEDs + kThirdLEDs ) {
                         tmp = orangeBitmap;
                     } else {
-                        tmp = greenBitmap;
+                        tmp = lastBitmap;
                     }
                 }
             } 
             canvas.drawBitmap( tmp, px, py, null );
             px += tmp.getWidth();
         }
+    }
+    
+    //=============================================================================
+    private void drawLEDs( Canvas canvas ) {
         
+        if ( displayOrder == EDisplayOrder.eOutsideIn ) {
+            drawLEDsOutsideIn( canvas );
+           
+        } else {
+            drawLEDsLeft2Right( canvas );
+        }
         if ( showRPM ) {
             
             String rpm = Integer.toString( currentValue );
             
-            px = ( getMeasuredWidth() - (int)textPaint.measureText( rpm ) ) / 2;
+            int px = ( getMeasuredWidth() - (int)textPaint.measureText( rpm ) ) / 2;
+            int py = getMeasuredHeight() / 2;
+            py -= yellowBitmap.getHeight() / 2;
+
             canvas.drawText( rpm, px, py / 2, textPaint );
-            
         }
     }
     
@@ -271,17 +375,27 @@ public class LightsView extends View {
     private void drawScreen( Canvas canvas ) {
         
         int col = Color.GRAY;
-        
-        if ( cnt < kRedLEDs ) { 
-            col = Color.RED;
+
+        int firstColor;
+        int lastColor;
+        if ( colorOrder == EColorOrder.eGreenFirst ) {
+            firstColor = Color.GREEN;
+            lastColor  = Color.RED;
         } else {
-            if ( cnt < kYellowLEDs + kRedLEDs ) {
+            firstColor = Color.RED;
+            lastColor  = Color.GREEN;
+        }
+
+        if ( cnt < kFirstLEDs ) { 
+            col = firstColor;
+        } else {
+            if ( cnt < kSecondLEDs + kFirstLEDs ) {
                 col = Color.YELLOW;
             } else {
-                if ( cnt < kYellowLEDs + kRedLEDs + kOrangeLEDs ) {
+                if ( cnt < kSecondLEDs + kFirstLEDs + kSecondLEDs ) {
                     col = Color.rgb( 255, 165, 0 );
                 } else {
-                    col = Color.GREEN;
+                    col = lastColor;
                 }
             }
         }
@@ -291,27 +405,86 @@ public class LightsView extends View {
     }
     
     //=============================================================================
-    private void drawBars( Canvas canvas ) {
+    private void  drawBarsOutsideIn( Canvas canvas ) {
         
         int measuredHeight = getMeasuredHeight();
-    
+        int measuredWidth  = getMeasuredWidth();
         int width = yellowBitmap.getWidth();
         
+        float left = 0;
+        float right = measuredWidth - width;
+        
+        Paint firstPaint;
+        Paint lastPaint;
+        
+        if ( colorOrder == EColorOrder.eGreenFirst ) {
+            firstPaint = greenPaint;
+            lastPaint  = redPaint;
+        } else {
+            firstPaint = redPaint;
+            lastPaint  = greenPaint;
+        }
+        int iterations = ( cnt + 1 ) / 2;
+        for ( int i = 0, position = 0; i < iterations; ++i ) {
+            
+            Paint tmp = null;
+
+            if ( position < kFirstLEDs ) { 
+                tmp = firstPaint;
+            } else {
+                if ( position < kSecondLEDs + kFirstLEDs ) {
+                    tmp = yellowPaint;
+                } else {
+                    if ( position < kSecondLEDs + kFirstLEDs + kThirdLEDs ) {
+                        tmp = orangePaint;
+                    } else {
+                        tmp = lastPaint;
+                    }
+                }
+            }
+
+            canvas.drawRect( left, 0, left + width, measuredHeight, tmp );
+            canvas.drawRect( right, 0, right + width, measuredHeight, tmp );
+            
+            left  += width;
+            right -= width;
+
+            position += 2;
+        }
+    }
+
+    //=============================================================================
+    private void drawBarssLeft2Right( Canvas canvas ) {
+        
+        int measuredHeight = getMeasuredHeight();
+        
+        int width = yellowBitmap.getWidth();
+        
+        Paint firstPaint;
+        Paint lastPaint;
+        
+        if ( colorOrder == EColorOrder.eGreenFirst ) {
+            firstPaint = greenPaint;
+            lastPaint  = redPaint;
+        } else {
+            firstPaint = redPaint;
+            lastPaint  = greenPaint;
+        }
         float left = 0;
         for ( int i = 0; i < cnt; ++i ) {
 
             Paint tmp = null;
             
-            if ( i < kRedLEDs ) { 
-                tmp = redPaint;
+            if ( i < kFirstLEDs ) { 
+                tmp = firstPaint;
             } else {
-                if ( i < kYellowLEDs + kRedLEDs ) {
+                if ( i < kSecondLEDs + kFirstLEDs ) {
                     tmp = yellowPaint;
                 } else {
-                    if ( i < kYellowLEDs + kRedLEDs + kOrangeLEDs ) {
+                    if ( i < kSecondLEDs + kFirstLEDs + kThirdLEDs ) {
                         tmp = orangePaint;
                     } else {
-                        tmp = greenPaint;
+                        tmp = lastPaint;
                     }
                 }
             }
@@ -319,15 +492,32 @@ public class LightsView extends View {
             canvas.drawRect( left, 0, left + width, measuredHeight, tmp );
             left += width;
         }
+    }
 
+    //=============================================================================
+    private void drawBars( Canvas canvas ) {
+        
+        if ( displayOrder == EDisplayOrder.eOutsideIn ) {
+            drawBarsOutsideIn( canvas );
+           
+        } else {
+            drawBarssLeft2Right( canvas );
+        }
         drawRPMText( canvas );
     }
     
     //=============================================================================    
     private void drawFlash( Canvas canvas ) {
-    
-        if ( cnt >= kRedLEDs + kYellowLEDs + kOrangeLEDs ) {
-            canvas.drawColor( Color.GREEN );
+
+        int color;
+        if ( colorOrder == EColorOrder.eGreenFirst ) {
+            color = Color.GREEN;
+        } else {
+            color = Color.RED;
+        }
+
+        if ( cnt >= kFirstLEDs + kSecondLEDs + kThirdLEDs ) {
+            canvas.drawColor( color );
         }
         
         drawRPMText( canvas );
